@@ -1,0 +1,135 @@
+---
+title: "HW5"
+author: "Tianna Juárez"
+editor: visual
+format:
+  html:
+    embed-resources: true
+    code-fold: true  # new
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+# The Office
+
+Let's return to *The Office* and the question of how many times they said "that's what she said". Now we can use n-grams to help us with the searching. Recall that the text is in the [schrute](https://cran.r-project.org/web/packages/schrute/index.html) package on CRAN.
+
+```{r setup}
+library("tidyverse")
+library("schrute")
+library("tidytext")
+```
+
+Do the following: (please label each section with the same number as listed here)
+
+## 1.
+
+Count the number of [lines]{.underline} in which "that's what she said" is said in *The Office* (yes, we discussed this previously).
+
+```{r}
+theoffice |> 
+  filter(str_detect(str_to_lower(text), "that's what she said")) |> 
+  count()
+```
+
+There are 33 lines.
+
+## 2.
+
+Confirm that you get the same result when using `ngram4`, a variable which is an ngram of size 4 (4 words at a time).
+
+```{r}
+theoffice_ngram4 <- theoffice  |>
+  unnest_tokens(words4, text, "ngrams", n=4)
+
+theoffice_ngram4 |> 
+  filter(str_detect(words4, "that's what she said")) |> 
+  count()
+```
+
+There are 35 lines, which is discrepancy from number 1.
+
+## 3.
+
+Explore whether "that's what she" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+```{r}
+theoffice_ngram4 |> 
+  filter(str_detect(words4, "that's what she"))
+```
+
+Other phrases to possibly include:
+
+1.  "That's what she sai"
+2.  "That's what she...
+
+There are some duplicates that appear that we might want to explore.
+
+## 4. 
+
+Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+```{r}
+theoffice_ngram4 |> 
+  filter(str_detect(words4, "what she said"))
+```
+
+I do see duplicates of phrases but I don't notice additional phrases to include in our count.
+
+## 5.
+
+Print all the [unique]{.underline} lines that contain the words "that", "what", "she" and "said", but do NOT contain the string "that's what she said". Decide whether any of these lines should be included as saying "that's what she said".
+
+```{r}
+theoffice |> 
+  mutate(text_lower = str_to_lower(text)) |> 
+  filter(
+    str_detect(text_lower, "that") &
+    str_detect(text_lower, "what") &
+    str_detect(text_lower, "she") &
+    str_detect(text_lower, "said") &
+    !str_detect(text_lower, "that's what she said")) |> 
+  distinct(text)
+```
+
+None of these lines should be included as saying "that's what she said," as none of them fit the context.
+
+## 6.
+
+Create a frequency distribution of X, where X is determined from the third word in "that's what X said".
+
+```{r}
+theoffice |> 
+  mutate(text_lower = str_to_lower(text)) |> 
+  filter(str_detect(text_lower, "that's what .* said")) |>
+  mutate(X = str_extract(text_lower, "(?<=that's what )\\w+(?= said)")) |>
+  count(X, sort = TRUE)
+```
+
+The phrase with "she" is the most popular.
+
+## 7.
+
+Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
+
+```{r}
+theoffice <- theoffice |> 
+  mutate(
+    text_lower = str_to_lower(text),
+    twss_type = case_when(
+      text_lower == "that's what she said" ~ 1,
+      str_starts(text_lower, "that's what she") ~ 3,
+      str_ends(text_lower, "what she said") ~ 4,
+      TRUE ~ 0))
+```
+
+## 8.
+
+Create a frequency distribution of the new variable you created in part 7.
+
+```{r}
+theoffice |> 
+  count(twss_type, sort = TRUE)
+```
