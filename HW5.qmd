@@ -24,6 +24,8 @@ library("tidytext")
 
 Do the following: (please label each section with the same number as listed here)
 
+Overall, she shows a clear understanding of unnesting tokens and ngrams, and the theoffice dataset! The assignment is logically organized by question, so it is easy to follow. Great job!
+
 ## 1.
 
 Count the number of [lines]{.underline} in which "that's what she said" is said in *The Office* (yes, we discussed this previously).
@@ -51,6 +53,9 @@ theoffice_ngram4 |>
 
 There are 35 lines, which is discrepancy from number 1.
 
+An alternative way to code this part would be:\
+filter(ngram4 == "that's what she said"), yet both work!!
+
 ## 3.
 
 Explore whether "that's what she" included in `ngram4` allows you to determine any additional phrases that should be included.
@@ -60,6 +65,8 @@ theoffice_ngram4 |>
   filter(str_detect(words4, "that's what she"))
 ```
 
+I'm noticing that she relies heavily on str_detect(), which works great, but isn't the only option! But if you're comfortable using it, then stick with it!
+
 Other phrases to possibly include:
 
 1.  "That's what she sai"
@@ -67,7 +74,7 @@ Other phrases to possibly include:
 
 There are some duplicates that appear that we might want to explore.
 
-## 4. 
+## 4.
 
 Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
 
@@ -110,6 +117,8 @@ theoffice |>
 
 The phrase with "she" is the most popular.
 
+What is the NA representing here?
+
 ## 7.
 
 Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
@@ -124,6 +133,8 @@ theoffice <- theoffice |>
       str_ends(text_lower, "what she said") ~ 4,
       TRUE ~ 0))
 ```
+
+I think here it could've been valuable/interesting to add in another common word from part 6 so you would have a "6" category. Like for me, just for the sake of the analysis, I added in "who" and "he", yet, I don't see "he" showing up as an option for you.
 
 ## 8.
 
