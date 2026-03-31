@@ -47,14 +47,16 @@ theoffice_ngram4 <- theoffice  |>
   unnest_tokens(words4, text, "ngrams", n=4)
 
 theoffice_ngram4 |> 
-  filter(str_detect(words4, "that's what she said")) |> 
+  filter(words4=="that's what she said") |> 
   count()
 ```
 
 There are 35 lines, which is discrepancy from number 1.
 
 An alternative way to code this part would be:\
-filter(ngram4 == "that's what she said"), yet both work!!
+filter(ngram4 == "that's what she said"), yet both work!!\
+\
+<!--# I like this! More concise. Not sure if it processes faster but I like it visually  -->
 
 ## 3.
 
@@ -65,7 +67,9 @@ theoffice_ngram4 |>
   filter(str_detect(words4, "that's what she"))
 ```
 
-I'm noticing that she relies heavily on str_detect(), which works great, but isn't the only option! But if you're comfortable using it, then stick with it!
+I'm noticing that she relies heavily on str_detect(), which works great, but isn't the only option! But if you're comfortable using it, then stick with it!\
+\
+<!--# I appreciate the other alterneatives! -->
 
 Other phrases to possibly include:
 
@@ -113,11 +117,20 @@ theoffice |>
   filter(str_detect(text_lower, "that's what .* said")) |>
   mutate(X = str_extract(text_lower, "(?<=that's what )\\w+(?= said)")) |>
   count(X, sort = TRUE)
+
+theoffice |> 
+  mutate(text_lower = str_to_lower(text)) |> 
+  filter(str_detect(text_lower, "that's what .* said")) |>
+  mutate(X = str_extract(text_lower, "(?<=that's what )\\w+(?= said)")) |>
+  filter(is.na(X)) |> 
+  select(text_lower)
 ```
 
 The phrase with "she" is the most popular.
 
 What is the NA representing here?
+
+<!--# Originally I thought it was the lack of word between "that's what" and "said" but I couldn't think how this would grammatically come up. Upon further investigation, its actually quite the opposite, it's picking up the phrase with a bunch of words between like the instances highlighted above. -->
 
 ## 7.
 
@@ -126,15 +139,20 @@ Add a categorical variable to the *original* data that takes a value that equals
 ```{r}
 theoffice <- theoffice |> 
   mutate(
-    text_lower = str_to_lower(text),
+    text_lower = str_to_lower(str_trim(text)),
     twss_type = case_when(
-      text_lower == "that's what she said" ~ 1,
-      str_starts(text_lower, "that's what she") ~ 3,
-      str_ends(text_lower, "what she said") ~ 4,
-      TRUE ~ 0))
+      str_detect(text_lower, "^that's what she said\\b") ~ 1,
+      str_detect(text_lower, "^that's what she") ~ 3,
+      str_detect(text_lower, "what she said$") ~ 4,
+      str_detect(text_lower, "^that's what he said\\b") ~ 6,
+      TRUE ~ 0
+    )
+  )
 ```
 
-I think here it could've been valuable/interesting to add in another common word from part 6 so you would have a "6" category. Like for me, just for the sake of the analysis, I added in "who" and "he", yet, I don't see "he" showing up as an option for you.
+I think here it could've been valuable/interesting to add in another common word from part 6 so you would have a "6" category. Like for me, just for the sake of the analysis, I added in "who" and "he", yet, I don't see "he" showing up as an option for you.\
+\
+<!--# That's fair! I think having knowledge of the show might be nice here. I will add the case of "he" to the mix as maybe they were playing with that example in the show -->
 
 ## 8.
 

@@ -2243,6 +2243,7 @@ vertical-align: -.125em;
 </details>
 </div>
 <p>Do the following: (please label each section with the same number as listed here)</p>
+<p>Overall, she shows a clear understanding of unnesting tokens and ngrams, and the theoffice dataset! The assignment is logically organized by question, so it is easy to follow. Great job!</p>
 <section id="section" class="level2">
 <h2 class="anchored" data-anchor-id="section">1.</h2>
 <p>Count the number of <u>lines</u> in which “that’s what she said” is said in <em>The Office</em> (yes, we discussed this previously).</p>
@@ -2272,7 +2273,7 @@ vertical-align: -.125em;
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(words4, text, <span class="st">&quot;ngrams&quot;</span>, <span class="at">n=</span><span class="dv">4</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>theoffice_ngram4 <span class="sc">|&gt;</span> </span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(words4, <span class="st">&quot;that&#39;s what she said&quot;</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(words4<span class="sc">==</span><span class="st">&quot;that&#39;s what she said&quot;</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
@@ -2283,6 +2284,10 @@ vertical-align: -.125em;
 </div>
 </div>
 <p>There are 35 lines, which is discrepancy from number 1.</p>
+<p>An alternative way to code this part would be:<br>
+filter(ngram4 == “that’s what she said”), yet both work!!<br>
+<br>
+<!--# I like this! More concise. Not sure if it processes faster but I like it visually  --></p>
 </section>
 <section id="section-2" class="level2">
 <h2 class="anchored" data-anchor-id="section-2">3.</h2>
@@ -2312,6 +2317,9 @@ vertical-align: -.125em;
 #   words4 &lt;chr&gt;</code></pre>
 </div>
 </div>
+<p>I’m noticing that she relies heavily on str_detect(), which works great, but isn’t the only option! But if you’re comfortable using it, then stick with it!<br>
+<br>
+<!--# I appreciate the other alterneatives! --></p>
 <p>Other phrases to possibly include:</p>
 <ol type="1">
 <li>“That’s what she sai”</li>
@@ -2407,8 +2415,26 @@ vertical-align: -.125em;
  9 we          1
 10 who         1</code></pre>
 </div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>theoffice <span class="sc">|&gt;</span> </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">text_lower =</span> <span class="fu">str_to_lower</span>(text)) <span class="sc">|&gt;</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(text_lower, <span class="st">&quot;that&#39;s what .* said&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">X =</span> <span class="fu">str_extract</span>(text_lower, <span class="st">&quot;(?&lt;=that&#39;s what )</span><span class="sc">\\</span><span class="st">w+(?= said)&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(X)) <span class="sc">|&gt;</span> </span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(text_lower)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 1
+  text_lower                                                                    
+  &lt;chr&gt;                                                                         
+1 i think that&#39;s what they&#39;re doing to me. i can&#39;t prove it, but i wanted to se…
+2 see, that&#39;s what i&#39;m having trouble with, because the fact is, you never said…</code></pre>
+</div>
 </div>
 <p>The phrase with “she” is the most popular.</p>
+<p>What is the NA representing here?</p>
+<!--# Originally I thought it was the lack of word between "that's what" and "said" but I couldn't think how this would grammatically come up. Upon further investigation, its actually quite the opposite, it's picking up the phrase with a bunch of words between like the instances highlighted above. -->
 </section>
 <section id="section-6" class="level2">
 <h2 class="anchored" data-anchor-id="section-6">7.</h2>
@@ -2416,16 +2442,22 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>theoffice <span class="ot">&lt;-</span> theoffice <span class="sc">|&gt;</span> </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">text_lower =</span> <span class="fu">str_to_lower</span>(text),</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">twss_type =</span> <span class="fu">case_when</span>(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>      text_lower <span class="sc">==</span> <span class="st">&quot;that&#39;s what she said&quot;</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_starts</span>(text_lower, <span class="st">&quot;that&#39;s what she&quot;</span>) <span class="sc">~</span> <span class="dv">3</span>,</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_ends</span>(text_lower, <span class="st">&quot;what she said&quot;</span>) <span class="sc">~</span> <span class="dv">4</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>theoffice <span class="ot">&lt;-</span> theoffice <span class="sc">|&gt;</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">text_lower =</span> <span class="fu">str_to_lower</span>(<span class="fu">str_trim</span>(text)),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">twss_type =</span> <span class="fu">case_when</span>(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(text_lower, <span class="st">&quot;^that&#39;s what she said</span><span class="sc">\\</span><span class="st">b&quot;</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(text_lower, <span class="st">&quot;^that&#39;s what she&quot;</span>) <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(text_lower, <span class="st">&quot;what she said$&quot;</span>) <span class="sc">~</span> <span class="dv">4</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">str_detect</span>(text_lower, <span class="st">&quot;^that&#39;s what he said</span><span class="sc">\\</span><span class="st">b&quot;</span>) <span class="sc">~</span> <span class="dv">6</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="dv">0</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<p>I think here it could’ve been valuable/interesting to add in another common word from part 6 so you would have a “6” category. Like for me, just for the sake of the analysis, I added in “who” and “he”, yet, I don’t see “he” showing up as an option for you.<br>
+<br>
+<!--# That's fair! I think having knowledge of the show might be nice here. I will add the case of "he" to the mix as maybe they were playing with that example in the show --></p>
 </section>
 <section id="section-7" class="level2">
 <h2 class="anchored" data-anchor-id="section-7">8.</h2>
@@ -2433,15 +2465,17 @@ vertical-align: -.125em;
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>theoffice <span class="sc">|&gt;</span> </span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(twss_type, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>theoffice <span class="sc">|&gt;</span> </span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(twss_type, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
+<pre><code># A tibble: 4 × 2
   twss_type     n
       &lt;dbl&gt; &lt;int&gt;
-1         0 55109
-2         3    21</code></pre>
+1         0 55108
+2         1    18
+3         3     3
+4         6     1</code></pre>
 </div>
 </div>
 </section>
